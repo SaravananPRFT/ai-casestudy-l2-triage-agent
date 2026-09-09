@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.env.local
+outputs/audit_log.jsonl
+outputs/triage_results.json
+outputs/eval_results.json
+outputs/demo_transcript.txt

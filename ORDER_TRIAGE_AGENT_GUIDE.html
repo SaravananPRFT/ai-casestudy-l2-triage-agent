@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Triage Agent — Full Guide</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #232635;
+      --border: #2e3248;
+      --accent: #6c8ef7;
+      --accent2: #56d9a0;
+      --warn: #f7c96c;
+      --danger: #f76c6c;
+      --text: #e2e4ef;
+      --muted: #8b90a8;
+      --code-bg: #131620;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* Header */
+    .hero {
+      background: linear-gradient(135deg, #1a1d27 0%, #1e2235 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-bottom: 40px;
+    }
+    .hero h1 { font-size: 1.9rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .hero .sub { color: var(--muted); font-size: 0.95rem; }
+    .badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      color: var(--accent2);
+      margin-right: 6px;
+      margin-top: 12px;
+    }
+
+    /* TOC */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+    .toc h3 { color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 1px; margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+
+    /* Sections */
+    .section { margin-bottom: 48px; }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 8px;
+      margin-bottom: 24px;
+    }
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 28px 0 12px;
+    }
+    h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 20px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    p { margin-bottom: 14px; }
+
+    /* Code */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      margin: 14px 0;
+    }
+    code {
+      font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+      color: #c9d1f5;
+    }
+    pre code { color: #c9d1f5; }
+    .inline-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+      font-size: 0.84em;
+      color: var(--accent2);
+    }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.8px;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 16px 0;
+    }
+    .card.warn { border-color: #5a4a20; background: #1e1a10; }
+    .card.info { border-color: #1e3a5f; background: #0e1826; }
+    .card.success { border-color: #1a4a35; background: #0c1e18; }
+
+    /* Persona cards */
+    .persona-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+    .persona {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .persona-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .persona-role {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .persona ul { padding-left: 16px; font-size: 0.88rem; }
+    .persona li { margin-bottom: 5px; }
+
+    /* Architecture diagram */
+    .arch {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin: 16px 0;
+      font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      color: #c9d1f5;
+      overflow-x: auto;
+    }
+    .arch .node { color: var(--accent); }
+    .arch .llm  { color: var(--accent2); }
+    .arch .py   { color: var(--warn); }
+    .arch .io   { color: #e8a0f7; }
+
+    /* Steps */
+    .steps { counter-reset: step; }
+    .step {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      counter-increment: step;
+      min-width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body h4 { margin: 0 0 6px; color: #fff; text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+
+    /* Priority table colors */
+    .pri-urgent { color: var(--danger); font-weight: 700; }
+    .pri-high   { color: var(--warn); font-weight: 600; }
+    .pri-medium { color: var(--accent); }
+    .pri-low    { color: var(--muted); }
+    .route-priya  { color: #e8a0f7; font-weight: 600; }
+    .route-marcus { color: var(--accent2); }
+
+    /* Checklist */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { padding: 5px 0; }
+    .checklist li::before { content: "✅ "; }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+      padding-top: 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    /* Highlight inline */
+    .hi-blue   { color: var(--accent); }
+    .hi-green  { color: var(--accent2); }
+    .hi-yellow { color: var(--warn); }
+    .hi-purple { color: #e8a0f7; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Order Triage Agent</h1>
+    <p class="sub">Perficient Global AI-First Academy · L2 Capstone · Option 04 · Case 01</p>
+    <div>
+      <span class="badge">LangGraph</span>
+      <span class="badge">Claude Sonnet 4.6</span>
+      <span class="badge">Portkey Gateway</span>
+      <span class="badge">Python 3.11</span>
+      <span class="badge">Streamlit UI</span>
+      <span class="badge">64 tests · 100% eval</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#section1">What the Case Study Expects</a></li>
+      <li><a href="#section2">What Was Implemented — Architecture &amp; Tech Stack</a></li>
+      <li><a href="#section3">How to Run Locally</a></li>
+      <li><a href="#section4">Key Design Decisions</a></li>
+      <li><a href="#section5">Deliverables Checklist</a></li>
+    </ol>
+  </div>
+
+
+  <!-- SECTION 1 -->
+  <div class="section" id="section1">
+    <h2>1 · What the Case Study Expects</h2>
+
+    <p>
+      <strong>NorthPeak Commerce</strong> is a fictional mid-market online retailer.
+      Support tickets arrive as raw, unlabelled free text.
+      Three personas drive the requirements:
+    </p>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="persona-name">Marcus</div>
+        <div class="persona-role">Tier-1 Support Agent</div>
+        <ul>
+          <li>~4 minutes per ticket</li>
+          <li>Needs a ready-to-send draft reply he can approve or lightly edit</li>
+          <li>Needs a clear signal when a ticket is above his authority</li>
+          <li>Should <em>not</em> touch fraud/payment tickets</li>
+        </ul>
+      </div>
+      <div class="persona">
+        <div class="persona-name">Priya</div>
+        <div class="persona-role">Escalations Lead</div>
+        <ul>
+          <li>Owns fraud alerts &amp; payment issues — must arrive immediately</li>
+          <li>Also receives premium-tier HIGH/URGENT tickets</li>
+          <li>Must <em>not</em> be paged for routine "where is my order" queries</li>
+          <li>Needs a pre-written escalation summary with urgency context</li>
+        </ul>
+      </div>
+      <div class="persona">
+        <div class="persona-name">Dev</div>
+        <div class="persona-role">Ops Manager</div>
+        <ul>
+          <li>Wants every ticket tagged: category + priority</li>
+          <li>Full audit trail — a rationale for <em>every</em> routing decision</li>
+          <li>Queue health metrics at a glance</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>The Policy the Agent Must Encode</h3>
+
+    <h4>Step 1 — Classify into one of 10 categories</h4>
+    <pre><code>delivery_delay  |  wrong_item     |  damaged        |  refund_request
+payment_issue   |  address_change |  cancel_request |  product_question
+subscription    |  fraud_alert</code></pre>
+
+    <h4>Step 2 — Assign priority (base + optional premium bump)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Base Priority</th></tr></thead>
+        <tbody>
+          <tr><td>fraud_alert, payment_issue</td><td><span class="pri-urgent">URGENT</span></td></tr>
+          <tr><td>damaged, wrong_item</td><td><span class="pri-high">HIGH</span></td></tr>
+          <tr><td>delivery_delay, refund_request, address_change, cancel_request</td><td><span class="pri-medium">MEDIUM</span></td></tr>
+          <tr><td>product_question, subscription</td><td><span class="pri-low">LOW</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card info">
+      <strong>Premium Tier Bump:</strong> If <span class="inline-code">customer_tier == "premium"</span>,
+      move priority one rung up the ladder — LOW→MEDIUM, MEDIUM→HIGH, HIGH→URGENT.
+      Capped at URGENT. <span class="inline-code">standard</span> and <span class="inline-code">plus</span> keep base priority.
+    </div>
+
+    <h4>Step 3 — Route (rules applied in this exact order — order matters)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Condition</th><th>Route</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>category is <span class="inline-code">fraud_alert</span> or <span class="inline-code">payment_issue</span></td>
+            <td><span class="route-priya">Priya — always</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>customer_tier is <span class="inline-code">premium</span> AND priority is HIGH or URGENT</td>
+            <td><span class="route-priya">Priya</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>everything else</td>
+            <td><span class="route-marcus">Marcus — draft reply</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card warn">
+      <strong>The Composition Trap (key rubric test)</strong><br><br>
+      ORD-10015 — <span class="inline-code">premium</span> + <span class="inline-code">address_change</span>:
+      <ul style="margin-top:10px; padding-left:20px;">
+        <li>Base priority: <span class="pri-medium">MEDIUM</span> (address_change base)</li>
+        <li>After premium bump: <span class="pri-high">HIGH</span></li>
+        <li>Route check on HIGH → <span class="route-priya">Priya</span> ✓</li>
+      </ul>
+      <br>
+      If you evaluate routing <em>before</em> applying the premium bump (checking MEDIUM against the threshold), the result is
+      <span class="route-marcus">Marcus</span> — <strong>wrong</strong>.
+      Priority MUST be fully composed before routing rules are evaluated.
+    </div>
+
+    <h4>Step 4 — Required outputs per ticket</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>For</th><th>Required Output</th></tr></thead>
+        <tbody>
+          <tr><td>Marcus</td><td>Short, on-brand draft reply. Never promise a refund the policy hasn't approved.</td></tr>
+          <tr><td>Priya</td><td>Escalation summary — what happened, why it's escalating, urgency level.</td></tr>
+          <tr><td>Dev</td><td>One-line rationale for every decision: category, priority computation, route reason.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- SECTION 2 -->
+  <div class="section" id="section2">
+    <h2>2 · What Was Implemented</h2>
+
+    <h3>Architecture — LangGraph StateGraph</h3>
+
+    <div class="arch">
+<span class="io">orders_queue.csv</span>
+         │
+         ▼
+ ┌───────────────┐
+ │  <span class="node">classify</span>      │  <span class="llm">LLM call</span> → category (10 types), confidence, flags
+ └───────┬───────┘  <span class="llm">Structured output via Pydantic</span>
+         │
+         ▼
+ ┌───────────────┐
+ │   <span class="node">route</span>        │  <span class="py">Pure Python</span> → priority (base+bump) + route + rationale
+ └───────┬───────┘  <span class="py">policy_engine.py — NO LLM, deterministic</span>
+         │
+    ┌────┴────┐
+    ▼         ▼
+ <span class="node">draft</span>      <span class="node">escalate</span>    <span class="llm">LLM</span> → draft reply (Marcus) OR escalation summary (Priya)
+    └────┬────┘
+         │
+ ┌───────▼───────┐
+ │   <span class="node">audit</span>        │  Writes JSONL record → <span class="io">outputs/audit_log.jsonl</span>
+ └───────────────┘
+         │
+        END</div>
+
+    <p>
+      One conditional edge after <span class="inline-code">route_node</span>:
+      if <span class="inline-code">state["route"] == "marcus"</span> → <span class="inline-code">draft_node</span>;
+      if <span class="inline-code">"priya"</span> → <span class="inline-code">escalate_node</span>.
+      Both paths converge at <span class="inline-code">audit_node</span>.
+    </p>
+
+    <h3>LLM vs Pure Python — Where Each Is Used</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Node</th><th>LLM?</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><span class="inline-code">classify_node</span></td><td><span class="hi-green">Yes</span></td><td>Reading free text and inferring intent is a language task</td></tr>
+          <tr><td><span class="inline-code">route_node</span></td><td><span class="hi-yellow">No</span></td><td>Pure rule table — deterministic, covered by 45 unit tests, no API key needed</td></tr>
+          <tr><td><span class="inline-code">draft_node</span></td><td><span class="hi-green">Yes</span></td><td>Generating warm, on-brand prose needs a language model</td></tr>
+          <tr><td><span class="inline-code">escalate_node</span></td><td><span class="hi-green">Yes</span></td><td>Summarising urgency and context for Priya</td></tr>
+          <tr><td><span class="inline-code">audit_node</span></td><td><span class="hi-yellow">No</span></td><td>Writes structured JSON — no language needed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Tech Stack</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Agent framework</td><td>LangGraph ≥ 0.2</td><td>Explicit state, conditional edges, built-in tracing</td></tr>
+          <tr><td>LLM model</td><td>Claude Sonnet 4.6 on AWS Bedrock</td><td>Structured output support, strong classification accuracy</td></tr>
+          <tr><td>LLM gateway</td><td>Perficient Portkey (<span class="inline-code">portkeygateway.perficient.com/v1</span>)</td><td>Built-in traces, no raw API key in code, routes to Bedrock</td></tr>
+          <tr><td>LangChain client</td><td><span class="inline-code">ChatOpenAI</span> (not ChatAnthropic)</td><td>Portkey gateway is OpenAI-compatible — <span class="inline-code">/v1/chat/completions</span></td></tr>
+          <tr><td>Structured output</td><td>Pydantic + <span class="inline-code">with_structured_output()</span></td><td>Forces classification into valid category enum</td></tr>
+          <tr><td>Policy engine</td><td>Pure Python (<span class="inline-code">policy_engine.py</span>)</td><td>Deterministic, independently testable, no LLM</td></tr>
+          <tr><td>Observability</td><td>JSONL audit log + Portkey dashboard</td><td>Per-ticket record + per-call LLM traces</td></tr>
+          <tr><td>Tools</td><td>LangChain <span class="inline-code">@tool</span> decorator</td><td><span class="inline-code">draft_reply</span>, <span class="inline-code">lookup_policy</span> as callable tools</td></tr>
+          <tr><td>Testing</td><td>pytest + pytest-asyncio</td><td>64 tests: policy (45), nodes (10), graph loop (9)</td></tr>
+          <tr><td>UI</td><td>Streamlit</td><td>Dashboard: queue results, escalations, stats</td></tr>
+          <tr><td>Data</td><td>pandas + csv</td><td>Read CSV ticket queue</td></tr>
+          <tr><td>Config</td><td>python-dotenv</td><td>Credentials from <span class="inline-code">.env</span> file</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card warn">
+      <strong>Why <span class="inline-code">ChatOpenAI</span>, not <span class="inline-code">ChatAnthropic</span>?</strong><br><br>
+      Perficient's Portkey gateway exposes an OpenAI-compatible API
+      (<span class="inline-code">/v1/chat/completions</span>).
+      <span class="inline-code">ChatAnthropic</span> sends requests in Anthropic native format,
+      the gateway returns an OpenAI-format response, and the client tries to iterate
+      a null <span class="inline-code">content</span> field — crashing with
+      <span class="inline-code">TypeError: 'NoneType' object is not iterable</span>.
+      This is the same pattern used in CertMasterAI's <span class="inline-code">generate_with_portkey()</span>.
+    </div>
+
+    <h3>Project Structure</h3>
+    <pre><code>order_triage_agent/
+├── .env                          ← Portkey credentials (never commit)
+├── run_triage.py                 ← Process all 54 tickets
+├── demo.py                       ← Demo transcript (2 tickets, full output)
+├── DESIGN_NOTE.md                ← Architecture decisions
+├── REFLECTION.md                 ← 6-section reflection (997 words)
+│
+├── data/
+│   ├── orders_queue.csv          ← 54 unlabelled tickets to process
+│   └── orders_dev_labeled.csv    ← 12 labelled tickets for evaluation
+│
+├── src/
+│   ├── agent/
+│   │   ├── state.py              ← TriageState TypedDict (shared graph state)
+│   │   ├── policy_engine.py      ← Pure Python rules (no LLM) — edit here for policy changes
+│   │   ├── nodes.py              ← 5 node functions (LLM calls live here)
+│   │   └── graph.py              ← LangGraph StateGraph wiring
+│   ├── tools/
+│   │   ├── draft_tool.py         ← @tool: draft_reply
+│   │   └── lookup_tool.py        ← @tool: lookup_policy
+│   ├── llm/
+│   │   └── client.py             ← ChatOpenAI → Portkey gateway
+│   └── observability/
+│       └── audit_logger.py       ← Read/query audit_log.jsonl
+│
+├── eval/
+│   └── evaluate.py               ← Score agent vs labeled set
+├── tests/
+│   ├── test_policy_engine.py     ← 45 pure-Python tests (no API key needed)
+│   ├── test_nodes.py             ← 10 node tests (mocked LLM)
+│   └── test_agent_loop.py        ← 9 graph wiring tests (asyncio)
+├── ui/
+│   └── app.py                    ← Streamlit dashboard (4 views)
+├── pytest.ini                    ← asyncio_mode = auto
+└── outputs/
+    ├── audit_log.jsonl           ← Per-ticket audit records (append-only)
+    ├── triage_results.json       ← Full queue results (54 tickets)
+    ├── eval_results.json         ← Evaluation scores
+    └── demo_transcript.txt       ← Demo output</code></pre>
+
+    <h3>Shared State — TriageState</h3>
+    <pre><code>class TriageState(TypedDict, total=False):
+    order_id: str
+    customer_tier: str          # standard | plus | premium
+    text_note: str
+    status: str
+    category: str               # one of 10 valid issue types
+    confidence: str             # high | medium | low
+    priority: str               # LOW | MEDIUM | HIGH | URGENT
+    route: str                  # marcus | priya
+    draft_reply: Optional[str]
+    escalation_summary: Optional[str]
+    rationale: str
+    flags: list
+    processed_at: str</code></pre>
+
+    <h3>.env Configuration</h3>
+    <pre><code># C:\Users\saravanan.sankaran\AILearning\projects\order_triage_agent\.env
+PORTKEY_BASE_URL=https://portkeygateway.perficient.com/v1
+PORTKEY_API_KEY=QpTVFFwhjnUnMA1m1r755TpnIwle
+ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-6
+EXTRA_HEADERS=x-portkey-provider:@aws-bedrock-use2</code></pre>
+  </div>
+
+
+  <!-- SECTION 3 -->
+  <div class="section" id="section3">
+    <h2>3 · How to Run Locally</h2>
+
+    <div class="card info">
+      <strong>Prerequisites:</strong> Python 3.11+, access to Perficient Portkey gateway
+      (credentials already configured in <span class="inline-code">.env</span>).
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Install dependencies</h4>
+          <pre><code>cd C:/Users/saravanan.sankaran/AILearning/projects/order_triage_agent
+pip install -r requirements.txt</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Verify the gateway is working</h4>
+          <pre><code>python -c "
+from dotenv import load_dotenv; load_dotenv()
+from src.llm.client import get_llm
+print(get_llm().invoke('Say: OK').content)
+"
+# Expected output: OK</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Run the test suite (no API key needed for policy tests)</h4>
+          <pre><code>python -m pytest -v
+# Expected: 64 passed</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Process the full 54-ticket queue</h4>
+          <pre><code>python run_triage.py
+# Prints triage table: ORDER_ID | TIER | CATEGORY | PRIORITY | ROUTE
+# Writes: outputs/triage_results.json + outputs/audit_log.jsonl</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Evaluate against the labeled dev set</h4>
+          <pre><code>python eval/evaluate.py
+# Expected: 12/12 (100%) category, priority, route accuracy
+# Writes: outputs/eval_results.json</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h4>Run the demo transcript (2 key tickets)</h4>
+          <pre><code>python demo.py
+# Ticket 1: ORD-10002 — damaged, plus → Marcus draft reply
+# Ticket 2: ORD-10015 — address_change, premium → Priya escalation (composition case)
+# Saves: outputs/demo_transcript.txt</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <h4>Launch the Streamlit dashboard</h4>
+          <pre><code>streamlit run ui/app.py
+# Opens at http://localhost:8501</code></pre>
+          <div class="table-wrap" style="margin-top:12px;">
+            <table>
+              <thead><tr><th>View</th><th>What you see</th></tr></thead>
+              <tbody>
+                <tr><td>Triage a Ticket</td><td>Enter any ticket text + tier, run live triage</td></tr>
+                <tr><td>Queue Results</td><td>Full 54-ticket table with filters</td></tr>
+                <tr><td>Escalation Queue</td><td>Priya's 18 escalations with summaries</td></tr>
+                <tr><td>Stats</td><td>Charts by category/priority + eval accuracy metrics</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Single Ticket — Useful for Testing Specific Cases</h3>
+    <pre><code># The composition case — premium + address_change → should route to Priya
+python run_triage.py --order ORD-10015
+
+# First 5 tickets only (faster test run)
+python run_triage.py --limit 5
+
+# Append to existing audit log (default clears on new run)
+python run_triage.py --no-clear-log</code></pre>
+  </div>
+
+
+  <!-- SECTION 4 -->
+  <div class="section" id="section4">
+    <h2>4 · Key Design Decisions</h2>
+
+    <h3>Policy Composition Order</h3>
+    <div class="card">
+      <strong>Correct order — must never be swapped:</strong>
+      <ol style="padding-left:22px; margin-top:10px;">
+        <li>Look up <strong>base priority</strong> from the category table</li>
+        <li>Apply the <strong>premium-tier bump</strong> (if applicable)</li>
+        <li>Evaluate <strong>routing rules</strong> against the <em>final</em> (post-bump) priority</li>
+      </ol>
+    </div>
+    <p>
+      The test <span class="inline-code">test_triage_premium_address_change</span> in
+      <span class="inline-code">tests/test_policy_engine.py</span> pins this as a hard constraint.
+    </p>
+
+    <h3>Multi-Issue Ticket Rule (Policy Gap)</h3>
+    <p>
+      The policy states "one issue per ticket" but real tickets don't always cooperate.
+      Documented rule: take the category that yields the highest priority after applying the premium bump.
+      On a tie, take the category that appears first in the note (preserves reading order = customer's primary concern).
+      Implemented in <span class="inline-code">policy_engine.resolve_multi_issue()</span>.
+    </p>
+
+    <h3>Customer-Directed Tickets</h3>
+    <p>
+      Customers who write "this is urgent, escalate now" get the same classification as those who don't.
+      The <span class="inline-code">text_note</span> is data, not an instruction. When detected,
+      the <span class="inline-code">customer_directed</span> flag is set in the rationale for Dev
+      to see, but it does not change category or route.
+    </p>
+
+    <h3>Why Not RAG?</h3>
+    <p>
+      The full escalation policy fits comfortably in the LLM's context window.
+      Embedding it in ChromaDB and retrieving chunks adds latency and a dependency
+      without improving accuracy. If the policy grew to dozens of pages, RAG would be worth it.
+    </p>
+
+    <h3>What Failed and How It Was Fixed</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Failure</th><th>Root Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="inline-code">TypeError: 'NoneType' object is not iterable</span></td>
+            <td><span class="inline-code">ChatAnthropic</span> used with OpenAI-compatible gateway</td>
+            <td>Replaced with <span class="inline-code">ChatOpenAI</span> — matches CertMasterAI pattern</td>
+          </tr>
+          <tr>
+            <td>Test mocking missed <span class="inline-code">draft_tool.py</span> LLM calls</td>
+            <td>Patched wrong import path (<span class="inline-code">src.agent.nodes.get_llm</span> but draft_tool imports directly)</td>
+            <td>Moved mock boundary to graph node functions in <span class="inline-code">src.agent.graph</span></td>
+          </tr>
+          <tr>
+            <td><span class="inline-code">UnicodeEncodeError</span> on Windows console</td>
+            <td>Unicode arrows/ticks not supported by cp1252 terminal</td>
+            <td>Added <span class="inline-code">sys.stdout.reconfigure(encoding="utf-8")</span>; replaced symbols with ASCII</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- SECTION 5 -->
+  <div class="section" id="section5">
+    <h2>5 · Deliverables Checklist</h2>
+    <ul class="checklist">
+      <li>54-ticket queue processed (0 errors)</li>
+      <li>Per-ticket audit record (<span class="inline-code">outputs/audit_log.jsonl</span>)</li>
+      <li>Evaluation 12/12 — 100% category, priority, route accuracy</li>
+      <li>Money-movement/fraud → Priya evidence in audit log</li>
+      <li>Hard tickets + multi-issue analysis in <span class="inline-code">DESIGN_NOTE.md</span></li>
+      <li>REFLECTION.md — 997 words, 6 sections</li>
+      <li>pytest-asyncio suite — 64/64 passing</li>
+      <li>Draft + lookup exposed as callable <span class="inline-code">@tool</span></li>
+      <li>Portkey gateway traces live (visible in Portkey dashboard)</li>
+      <li>Demo transcript saved to <span class="inline-code">outputs/demo_transcript.txt</span></li>
+      <li>Declared-effort statement in REFLECTION.md (~11 hours across 4 sessions)</li>
+    </ul>
+  </div>
+
+
+  <!-- Mental Model -->
+  <div class="section">
+    <h2>Quick Mental Model</h2>
+    <div class="arch">
+Text note  ──<span class="llm">LLM</span>──►  category
+category + tier  ──<span class="py">Python</span>──►  priority + route
+route == marcus  ──<span class="llm">LLM</span>──►  draft_reply (for Marcus to approve)
+route == priya   ──<span class="llm">LLM</span>──►  escalation_summary (for Priya)
+every ticket     ──<span class="io">always</span>──►  audit_log.jsonl entry</div>
+    <p style="margin-top: 14px; color: var(--muted);">
+      The LLM handles language. Python handles policy. The two never cross.
+    </p>
+  </div>
+
+
+  <div class="footer">
+    <p>
+      Order Triage Agent · Perficient AI-First Academy L2 Capstone · Option 04 · Case 01<br>
+      Project path: <span class="inline-code">C:\Users\saravanan.sankaran\AILearning\projects\order_triage_agent</span>
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

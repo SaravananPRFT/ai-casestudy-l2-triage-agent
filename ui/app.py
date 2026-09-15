@@ -175,6 +175,7 @@ with st.sidebar:
             ok, out = run_full_queue(limit=limit_map[limit_opt])
         if ok:
             st.success("Done — results updated.")
+            st.rerun()
         else:
             st.error("Run failed")
             st.code(out[:800])
@@ -346,27 +347,66 @@ elif page == "📋 Queue Results":
         .map(_colour_priority, subset=["Priority"])
         .map(_colour_route, subset=["Route"])
     )
-    st.dataframe(styled, use_container_width=True, height=480)
 
-    # Detail drill-down
-    st.divider()
-    st.markdown("**Drill into a ticket**")
-    sel_id = st.selectbox("Order ID", ["—"] + list(dff["Order ID"]), key="drill_sel")
-    if sel_id != "—":
-        rec = next((r for r in results if r.get("order_id") == sel_id), None)
+    col_info, col_search = st.columns([3, 2])
+    col_info.caption(f"Showing **{len(dff)}** of **{len(results)}** tickets — check rows to view details")
+    search_id = col_search.text_input(
+        "Search by Order ID",
+        placeholder="e.g. ORD-10001",
+        label_visibility="collapsed",
+        key="drill_search",
+    )
+
+    selection = st.dataframe(
+        styled,
+        use_container_width=True,
+        height=460,
+        on_select="rerun",
+        selection_mode="multi-row",
+        key="queue_table",
+    )
+
+    # Collect selected records — search box OR checkbox rows
+    selected_records = []
+    if search_id:
+        rec = next(
+            (r for r in results if r.get("order_id", "").upper() == search_id.strip().upper()),
+            None,
+        )
         if rec:
-            dc1, dc2, dc3 = st.columns(3)
-            dc1.markdown(priority_badge(rec.get("priority", "—")), unsafe_allow_html=True)
-            dc2.markdown(route_badge(rec.get("route", "—")), unsafe_allow_html=True)
-            dc3.markdown(tier_badge(rec.get("customer_tier", "—")), unsafe_allow_html=True)
-            st.markdown(f"**Note:** {rec.get('text_note', '')}")
-            parsed = parse_rationale(rec.get("rationale", ""))
-            for part in parsed["parts"]:
-                st.markdown(f"› {part}")
-            if rec.get("draft_reply"):
-                st.info(rec["draft_reply"])
-            if rec.get("escalation_summary"):
-                st.error(rec["escalation_summary"])
+            selected_records = [rec]
+        else:
+            st.warning(f"`{search_id.strip()}` not found.")
+    elif selection.selection.rows:
+        dff_reset = dff.reset_index(drop=True)
+        for i in selection.selection.rows:
+            sel_id = dff_reset.iloc[i]["Order ID"]
+            rec = next((r for r in results if r.get("order_id") == sel_id), None)
+            if rec:
+                selected_records.append(rec)
+
+    if selected_records:
+        st.divider()
+        if len(selected_records) > 1:
+            st.markdown(f"**{len(selected_records)} tickets selected**")
+        for rec in selected_records:
+            with st.expander(
+                f"`{rec['order_id']}` · {rec.get('category','—')} · "
+                f"{rec.get('priority','—')} · {rec.get('route','—')}",
+                expanded=True,
+            ):
+                dc1, dc2, dc3 = st.columns(3)
+                dc1.markdown(priority_badge(rec.get("priority", "—")), unsafe_allow_html=True)
+                dc2.markdown(route_badge(rec.get("route", "—")), unsafe_allow_html=True)
+                dc3.markdown(tier_badge(rec.get("customer_tier", "—")), unsafe_allow_html=True)
+                st.markdown(f"**Note:** {rec.get('text_note', '')}")
+                parsed = parse_rationale(rec.get("rationale", ""))
+                for part in parsed["parts"]:
+                    st.markdown(f"› {part}")
+                if rec.get("draft_reply"):
+                    st.info(rec["draft_reply"])
+                if rec.get("escalation_summary"):
+                    st.error(rec["escalation_summary"])
 
 
 # ---------------------------------------------------------------------------
